@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Complaint Management System
 
 Java 17 · Spring Boot 3 · Servlets · JDBC · PostgreSQL · HTML
@@ -34,3 +35,6 @@ Java 17 · Spring Boot 3 · Servlets · JDBC · PostgreSQL · HTML
 Statuses: PENDING, IN_PROGRESS, RESOLVED, REJECTED
 
 Note: the admin page has no login. Add Spring Security or a session check before real use.
+=======
+# complaint-management-system
+>>>>>>> 987a47ed5af6a4774a765e1232c20cecb212e903
