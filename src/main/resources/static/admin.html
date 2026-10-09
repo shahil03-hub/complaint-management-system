@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin - Complaints</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <span class="brand">Complaint Management System</span>
+    <a href="index.html">Submit Complaint</a>
+    <a href="track.html">Track Complaint</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+
+  <div class="container wide">
+    <h2>All Complaints</h2>
+    <div class="toolbar">
+      <label for="filter" style="margin:0">Filter:</label>
+      <select id="filter" onchange="load()">
+        <option value="">All</option>
+        <option value="PENDING">Pending</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="RESOLVED">Resolved</option>
+        <option value="REJECTED">Rejected</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name / Email</th><th>Category</th><th>Subject &amp; Description</th>
+            <th>Status</th><th>Date</th><th>Action</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const STATUSES = ['PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJECTED'];
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    async function load() {
+      const status = document.getElementById('filter').value;
+      const res = await fetch('/api/complaints' + (status ? '?status=' + status : ''));
+      const list = await res.json();
+      const tbody = document.getElementById('rows');
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7">No complaints found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(c => `
+        <tr>
+          <td>#${c.id}</td>
+          <td>${esc(c.name)}<br><small>${esc(c.email)}</small></td>
+          <td>${esc(c.category)}</td>
+          <td><b>${esc(c.subject)}</b><br>${esc(c.description)}</td>
+          <td>
+            <select onchange="setStatus(${c.id}, this.value)">
+              ${STATUSES.map(s => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${s.replace('_', ' ')}</option>`).join('')}
+            </select>
+          </td>
+          <td>${esc(c.createdAt.substring(0, 16))}</td>
+          <td><button class="danger" onclick="del(${c.id})">Delete</button></td>
+        </tr>`).join('');
+    }
+
+    async function setStatus(id, status) {
+      await fetch('/api/complaints/status', {
+        method: 'POST',
+        body: new URLSearchParams({ id, status })
+      });
+      load();
+    }
+
+    async function del(id) {
+      if (!confirm('Delete complaint #' + id + '?')) return;
+      await fetch('/api/complaints/delete', { method: 'POST', body: new URLSearchParams({ id }) });
+      load();
+    }
+
+    load();
+  </script>
+</body>
+</html>

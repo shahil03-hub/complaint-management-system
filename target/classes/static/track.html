@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Track Complaint</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <span class="brand">Complaint Management System</span>
+    <a href="index.html">Submit Complaint</a>
+    <a href="track.html">Track Complaint</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+
+  <div class="container">
+    <h2>Track Your Complaint</h2>
+    <label for="cid">Complaint ID</label>
+    <input type="number" id="cid" min="1" placeholder="e.g. 1">
+    <button onclick="track()">Check Status</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+    async function track() {
+      const id = document.getElementById('cid').value;
+      const out = document.getElementById('result');
+      if (!id) { out.innerHTML = '<div class="msg err">Enter a complaint ID</div>'; return; }
+      const res = await fetch('/api/complaints?id=' + encodeURIComponent(id));
+      const c = await res.json();
+      if (!res.ok) { out.innerHTML = '<div class="msg err">' + esc(c.error) + '</div>'; return; }
+      out.innerHTML =
+        '<table>' +
+        '<tr><th>ID</th><td>#' + c.id + '</td></tr>' +
+        '<tr><th>Subject</th><td>' + esc(c.subject) + '</td></tr>' +
+        '<tr><th>Category</th><td>' + esc(c.category) + '</td></tr>' +
+        '<tr><th>Status</th><td><span class="badge ' + c.status + '">' + c.status.replace('_', ' ') + '</span></td></tr>' +
+        '<tr><th>Submitted</th><td>' + esc(c.createdAt) + '</td></tr>' +
+        '</table>';
+    }
+  </script>
+</body>
+</html>
